@@ -1,11 +1,12 @@
-import { ethers, AddressLike, isAddressable } from "ethers";
+import { ethers, AddressLike, isAddressable, TransactionReceipt } from "ethers";
 import { Command } from ".";
 
 export class Transfer extends Command {
   private to: AddressLike;
-  private amount: number;
+  private amount: string;
+  private ownerAddress: string = process.env.SIGNER_PRIVATE_KEY!;
 
-  public constructor(to: AddressLike, amount: number) {
+  public constructor(to: AddressLike, amount: string) {
     super("transfer");
     this.to = to;
     this.amount = amount;
@@ -16,7 +17,7 @@ export class Transfer extends Command {
       return `Provided argument is not addressable: ${this.to}`;
     }
 
-    if (isNaN(this.amount) || this.amount === 0) {
+    if (isNaN(Number(this.amount)) || Number(this.amount) === 0) {
       return `Provided amount is invalid: ${this.amount}`;
     }
 
@@ -25,18 +26,35 @@ export class Transfer extends Command {
   }
 
   public async exec(): Promise<string> {
+    console.log("Starting execution");
+
     const validationResult: string | null = this.validate();
     if (validationResult) {
+      console.log("Validation failed: " + validationResult);
       return validationResult;
     }
-    // const signer = new ethers.Wallet(process.env.SIGNER_PRIVATE_KEY).connect(
-    //   provider,
-    // );
-    // signer.sendTransaction({});
+    console.log("Validation passed");
 
-    //     const impersonatedSigner = await ethers.getImpersonatedSigner("0x1234567890123456789012345678901234567890");
-    // await impersonatedSigner.sendTransaction(...);
-    throw new Error("Not implemented");
+    const wallet = new ethers.Wallet(this.ownerAddress);
+    console.log("Created wallet for owner address");
+
+    const txData = {
+      to: this.to,
+      value: ethers.parseEther(this.amount.toString()),
+    };
+
+    console.log("Transaction data created:", txData);
+
+    const tx = await wallet.sendTransaction(txData);
+    console.log("Transaction sent:", tx);
+
+    const finishedTx: TransactionReceipt | null = await tx.wait();
+    if (!finishedTx) {
+      throw new Error("Transaction failed");
+    }
+
+    console.log("Transaction successful. Tx hash:", finishedTx.hash);
+    return `Tx hash: ${finishedTx.hash}`;
   }
 
   public help(): string {

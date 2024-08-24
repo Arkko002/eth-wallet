@@ -1,4 +1,3 @@
-import { Network, ethers, formatEther } from "ethers";
 import { verify_env_vars } from "./config";
 import { Command, parseCommandLine } from "./cmd";
 

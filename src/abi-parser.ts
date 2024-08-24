@@ -1,4 +1,3 @@
-import parse from "parse-json";
 import fs from "node:fs/promises";
 
 export enum TokenABI {

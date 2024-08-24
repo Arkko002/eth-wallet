@@ -2,18 +2,29 @@ import { formatEther, AddressLike, isAddressable } from "ethers";
 import { Command } from ".";
 
 export class Balance extends Command {
-  public async exec(): Promise<string> {
-    const validationResult: string | null = this.validate();
-    if (validationResult) {
-      return validationResult;
-    }
-    return formatEther(await this.provider.getBalance("ethers.eth"));
-  }
-
   private address: AddressLike;
   public constructor(address?: AddressLike) {
     super("balance");
     this.address = address ? address! : process.env.SIGNER_PRIVATE_KEY!;
+  }
+
+  public async exec(): Promise<string> {
+    console.log("Starting execution of balance command");
+
+    const validationResult: string | null = this.validate();
+    if (validationResult) {
+      console.log("Validation failed: " + validationResult);
+      return validationResult;
+    }
+    console.log("Validation passed");
+
+    const balance = await this.provider.getBalance("ethers.eth");
+    console.log("Retrieved balance:", balance);
+
+    const formattedBalance = formatEther(balance);
+    console.log("Formatted balance:", formattedBalance);
+
+    return formattedBalance;
   }
 
   public validate(): string | null {

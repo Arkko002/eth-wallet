@@ -31,7 +31,7 @@ export function parseCommandLine(cmds: string[]): Command {
     return new Balance();
   } else if (cmds[0] === "transfer") {
     if (cmds.length > 2) {
-      return new Transfer(cmds[1], Number(cmds[2]));
+      return new Transfer(cmds[1], cmds[2]);
     }
     throw new Error(`Missing arguments for command: ${cmds[0]}`);
   } else if (cmds[0] === "nfts") {
